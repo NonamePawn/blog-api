@@ -9,6 +9,7 @@
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
+
 // [ 应用入口文件 ]
 namespace think;
 
@@ -22,3 +23,4 @@ $response = $http->run();
 $response->send();
 
 $http->end($response);
+
