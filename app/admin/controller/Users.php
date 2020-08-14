@@ -3,26 +3,40 @@ declare (strict_types = 1);
 
 namespace app\admin\controller;
 
-use app\common\controller\admin;
+use app\common\controller\Admin;
+use think\facade\Db;
 use think\Request;
 use app\admin\model\User as UserModel;
 
-class Users extends admin
+class Users extends Admin
 {
+
+    /**
+     * @var UserModel
+     */
+    // user表
+    private $model;
+    /**
+     * @var string
+     */
+    private $msg;
 
     public function __construct()
     {
-        $this->user = new UserModel;
+        // 实例化模型对象
+        $this->model = new UserModel;
+        // 提示信息
+        $this->msg = '用户';
     }
 
     /**
      * 显示资源列表
-     *
+     * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return $this->create(UserModel::select(), '200', '获取用户列表成功');
+        return $this->adminIndex($this->model, $this->msg, $request, 'username');
     }
 
     /**
@@ -39,14 +53,7 @@ class Users extends admin
             'email' => $request->param('email'),
             'last_login_IP' =>  $request->ip()
         ];
-        try
-        {
-            $status = $this->user->save($data);
-        }catch (\Exception $exception)
-        {
-            return $this->create(0, 204, '用户已存在');
-        }
-
+        $status = $this->model->save($data);
         if ($status)
         {
             return $this->create($status, 201, '用户创建成功');
@@ -66,14 +73,7 @@ class Users extends admin
      */
     public function read($id)
     {
-        $user = UserModel::find($id);
-        if ($user)
-        {
-            return $this->create($user,200,'查询用户成功');
-        }else
-        {
-            return $this->create([],204,'查询用户失败');
-        }
+        return $this->adminRead($this->model, $id, $this->msg);
     }
 
     /**
@@ -85,12 +85,9 @@ class Users extends admin
      */
     public function update(Request $request, $id)
     {
-        foreach (array_reverse($request->param()) as $key => $value)
+        $user = $this->model->find($id);
+        foreach ($request->param() as $key => $value)
         {
-            if ($key == 'id')
-            {
-                $user = UserModel::find($value);
-            }
             if ($key == 'password')
             {
                 $user->$key = md5($value);
@@ -117,15 +114,7 @@ class Users extends admin
      */
     public function delete($id)
     {
-        $user = UserModel::find($id);
-        if ($user)
-        {
-            $user->delete();
-            return $this->create(null, 200, '删除用户成功');
-        }else
-        {
-            return $this->create(null, 200, '用户不存在');
-
-        }
+        return $this->adminDelete($this->model, $id, $this->msg);
     }
+
 }

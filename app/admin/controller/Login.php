@@ -3,15 +3,15 @@ declare (strict_types = 1);
 
 namespace app\admin\controller;
 
-use app\common\controller\admin;
-use think\facade\Db;
+use app\common\controller\Admin;
+use app\middleware\AdminCheck;
 use think\Request;
 use app\admin\model\User as UserModel;
 
 
-class Login extends admin
+class Login extends Admin
 {
-
+    // 只允许访问save方法
     protected $middleware = [
         AdminCheck::class => ['except' => ['save'] ],
     ];
@@ -29,34 +29,37 @@ class Login extends admin
     /**
      * 保存新建的资源
      *
-     * @param  \think\Request  $request
+     * @param \think\Request $request
      * @return \think\Response
+     * @throws \think\db\exception\DbException
      */
     public function save(Request $request)
     {
-
+        // 获取数据
         $username = $request->param('username');
         $password = md5($request->param('password'));
+        // 查询用户
         $user = UserModel::where(['username'=>$username, 'password'=>$password])->field(['id', 'power'])->findOrEmpty();
+        // 验证用户
         if ($user->isEmpty())
         {
             return $this->create($user,204, '用户不存在');
         }
-        else if ($user->power == '普通用户')
+        else if ($user->getData('power') == '普通用户')
         {
             return $this->create($user,204, '权限不足');
         }
         else
         {
-            $IP = $request->ip();
-            $status = UserModel::where('id', $user->id)->update([
-                'login_times'   =>  Db::raw('login_times+1'),
-                'last_login_IP' =>  $IP
+            // 更新登录信息
+            $status = UserModel::where('id',$user->getData('id'))->update([
+                'login_times'   =>  (new \think\DbManager)->raw('login_times+1'),
+                'last_login_IP' =>  $request->ip()
             ]);
             if ($status)
             {
                 //生成令牌
-                $token = $this->signToken($user->id);
+                $token = $this->signToken($user->getData('id'));
                 $data = [
                     "token" => $token
                 ];
@@ -64,7 +67,7 @@ class Login extends admin
             }else
             {
                 $data = [];
-                return $this->create($data, 204, '获取令牌失败');
+                return $this->create($data, 500, '获取令牌失败');
             }
 
 
