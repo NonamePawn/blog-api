@@ -5,8 +5,12 @@ namespace app\admin\controller;
 
 
 use app\common\controller\Admin;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\Request;
 use app\admin\model\Category as CategoryModel;
+use think\Response;
 
 class Category extends Admin
 {
@@ -18,6 +22,14 @@ class Category extends Admin
      * @var string
      */
     private $msg;
+    /**
+     * @var bool
+     */
+    private $isEach;
+    /**
+     * @var string
+     */
+    private $filed;
 
     public function __construct()
     {
@@ -25,25 +37,31 @@ class Category extends Admin
         $this->model = new CategoryModel;
         // 提示信息
         $this->msg = '分类';
+        // 是否遍历查询
+        $this->isEach = true;
+        // 匹配字段
+        $this->filed = 'name';
     }
 
     /**
      * 显示资源列表
-     * @param  \think\Request  $request
-     * @return \think\Response
+     * @param Request $request
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
-    public function index()
+    public function index(Request  $request)
     {
-
-        return $this->adminEach($this->model, $this->msg);
+        return $this->adminIndex($this->model, $this->msg, $request, $this->filed, $this->isEach);
     }
 
 
     /**
      * 保存新建的资源
      *
-     * @param  \think\Request  $request
-     * @return \think\Response
+     * @param Request $request
+     * @return Response
      */
     public function save(Request $request)
     {
@@ -54,7 +72,7 @@ class Category extends Admin
      * 显示指定的资源
      *
      * @param  int  $id
-     * @return \think\Response
+     * @return Response
      */
     public function read($id)
     {
@@ -64,9 +82,9 @@ class Category extends Admin
     /**
      * 保存更新的资源
      *
-     * @param  \think\Request  $request
+     * @param Request $request
      * @param  int  $id
-     * @return \think\Response
+     * @return Response
      */
     public function update(Request $request, $id)
     {
@@ -76,11 +94,15 @@ class Category extends Admin
     /**
      * 删除指定资源
      *
-     * @param  int  $id
-     * @return \think\Response
+     * @param int $id
+     * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function delete($id)
     {
-        return $this->adminDelete($this->model, $id, $this->msg);
+        return $this->adminDeleteEach($this->model, $id, $this->msg);
     }
+
 }

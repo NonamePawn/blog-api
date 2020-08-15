@@ -4,9 +4,9 @@ declare (strict_types = 1);
 namespace app\admin\controller;
 
 use app\common\controller\Admin;
-use think\facade\Db;
 use think\Request;
 use app\admin\model\User as UserModel;
+use think\Response;
 
 class Users extends Admin
 {
@@ -20,6 +20,10 @@ class Users extends Admin
      * @var string
      */
     private $msg;
+    /**
+     * @var string
+     */
+    private $filed;
 
     public function __construct()
     {
@@ -27,23 +31,25 @@ class Users extends Admin
         $this->model = new UserModel;
         // 提示信息
         $this->msg = '用户';
+        // 匹配字段
+        $this->filed = 'username';
     }
 
     /**
      * 显示资源列表
-     * @param  \think\Request  $request
-     * @return \think\Response
+     * @param Request $request
+     * @return Response
      */
     public function index(Request $request)
     {
-        return $this->adminIndex($this->model, $this->msg, $request, 'username');
+        return $this->adminIndex($this->model, $this->msg, $request, $this->filed);
     }
 
     /**
      * 保存新建的资源
      *
-     * @param  \think\Request  $request
-     * @return \think\Response
+     * @param Request $request
+     * @return Response
      */
     public function save(Request $request)
     {
@@ -69,7 +75,7 @@ class Users extends Admin
      * 显示指定的资源
      *
      * @param  int  $id
-     * @return \think\Response
+     * @return Response
      */
     public function read($id)
     {
@@ -79,9 +85,9 @@ class Users extends Admin
     /**
      * 保存更新的资源
      *
-     * @param  \think\Request  $request
+     * @param Request $request
      * @param  int  $id
-     * @return \think\Response
+     * @return Response
      */
     public function update(Request $request, $id)
     {
@@ -110,7 +116,7 @@ class Users extends Admin
      * 删除指定资源
      *
      * @param  int  $id
-     * @return \think\Response
+     * @return Response
      */
     public function delete($id)
     {

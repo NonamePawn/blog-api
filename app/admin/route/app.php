@@ -15,3 +15,6 @@ Route::resource('donate', 'Donate');
 
 //后台分类管理模块
 Route::resource('category', 'Category');
+
+//后台评论模块
+Route::resource('comment', 'Comment');

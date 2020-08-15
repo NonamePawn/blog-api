@@ -5,8 +5,10 @@ namespace app\admin\controller;
 
 use app\common\controller\Admin;
 use app\middleware\AdminCheck;
+use think\db\exception\DbException;
 use think\Request;
 use app\admin\model\User as UserModel;
+use think\Response;
 
 
 class Login extends Admin
@@ -19,7 +21,7 @@ class Login extends Admin
     /**
      * 显示资源列表
      *
-     * @return \think\Response
+     *
      */
     public function index()
     {
@@ -29,9 +31,9 @@ class Login extends Admin
     /**
      * 保存新建的资源
      *
-     * @param \think\Request $request
-     * @return \think\Response
-     * @throws \think\db\exception\DbException
+     * @param Request $request
+     * @return Response
+     * @throws DbException
      */
     public function save(Request $request)
     {
@@ -79,7 +81,7 @@ class Login extends Admin
      * 显示指定的资源
      *
      * @param  int  $id
-     * @return \think\Response
+     * @return Response
      */
     public function read($id)
     {
@@ -89,9 +91,9 @@ class Login extends Admin
     /**
      * 保存更新的资源
      *
-     * @param  \think\Request  $request
+     * @param Request $request
      * @param  int  $id
-     * @return \think\Response
+     * @return Response
      */
     public function update(Request $request, $id)
     {
@@ -102,7 +104,7 @@ class Login extends Admin
      * 删除指定资源
      *
      * @param  int  $id
-     * @return \think\Response
+     * @return Response
      */
     public function delete($id)
     {

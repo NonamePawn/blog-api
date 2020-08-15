@@ -5,14 +5,17 @@ namespace app\admin\controller;
 
 
 use app\common\controller\Admin;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\Request;
-use app\admin\model\Donate as DonateModel;
+use app\admin\model\Comment as CommentModel;
 use think\Response;
 
-class Donate extends Admin
+class Comment extends Admin
 {
     /**
-     * @var DonateModel
+     * @var CommentModel
      */
     private $model;
     /**
@@ -20,18 +23,30 @@ class Donate extends Admin
      */
     private $msg;
     /**
+     * @var bool
+     */
+    private $isEach;
+    /**
      * @var string
      */
     private $filed;
+    /**
+     * @var string[]
+     */
+    private $associated;
 
     public function __construct()
     {
         // 实例化模型对象
-        $this->model = new DonateModel;
+        $this->model = new CommentModel;
         // 提示信息
-        $this->msg = '赞助人';
+        $this->msg = '评论';
+        // 是否遍历查询
+        $this->isEach = true;
         // 匹配字段
-        $this->filed = 'name';
+        $this->filed = 'a_id';
+        // 关联模型
+        $this->associated = ['user', 'article'];
     }
 
     /**
@@ -39,10 +54,11 @@ class Donate extends Admin
      * @param Request $request
      * @return Response
      */
-    public function index(Request $request)
+    public function index(Request  $request)
     {
-        return $this->adminIndex($this->model, $this->msg, $request, $this->filed);
+        return $this->adminIndex($this->model, $this->msg, $request, $this->filed, $this->isEach, $this->associated);
     }
+
 
     /**
      * 保存新建的资源
@@ -81,11 +97,14 @@ class Donate extends Admin
     /**
      * 删除指定资源
      *
-     * @param  int  $id
+     * @param int $id
      * @return Response
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function delete($id)
     {
-        return $this->adminDelete($this->model, $id, $this->msg);
+        return $this->adminDeleteEach($this->model, $id, $this->msg);
     }
 }

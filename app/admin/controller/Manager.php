@@ -5,6 +5,8 @@ namespace app\admin\controller;
 
 use app\admin\model\Manager as ManagerModel;
 use app\common\controller\Admin;
+use think\Request;
+use think\Response;
 
 
 class Manager extends Admin
@@ -18,6 +20,14 @@ class Manager extends Admin
      * @var string
      */
     private $msg;
+    /**
+     * @var bool
+     */
+    private $isEach;
+    /**
+     * @var string
+     */
+    private $filed;
 
     public function __construct()
     {
@@ -25,14 +35,21 @@ class Manager extends Admin
         $this->model = new ManagerModel;
         // 提示信息
         $this->msg = '路径';
+        // 是否遍历查询
+        $this->isEach = true;
+        // 匹配字段
+        $this->filed = '';
     }
+
     /**
      * 显示资源列表
      *
-     * @return \think\Response
+     * @param Request $request
+     * @return Response
      */
-    public function index()
+    public function index(Request  $request)
     {
-       return $this->adminEach($this->model, $this->msg);
+        return $this->adminIndex($this->model, $this->msg, $request, $this->filed, $this->isEach);
+
     }
 }
