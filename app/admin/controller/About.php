@@ -9,13 +9,13 @@ use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
 use think\Request;
-use app\admin\model\Donate as DonateModel;
+use app\admin\model\About as AboutModel;
 use think\Response;
 
-class Donate extends Admin
+class About extends Admin
 {
     /**
-     * @var DonateModel
+     * @var AboutModel
      */
     private $model;
     /**
@@ -30,11 +30,11 @@ class Donate extends Admin
     public function __construct()
     {
         // 实例化模型对象
-        $this->model = new DonateModel;
+        $this->model = new AboutModel;
         // 提示信息
-        $this->msg = '赞助人';
+        $this->msg = '关于项';
         // 匹配字段
-        $this->filed = 'name';
+        $this->filed = 'options';
     }
 
     /**

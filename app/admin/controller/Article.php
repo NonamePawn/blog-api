@@ -9,13 +9,13 @@ use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
 use think\Request;
-use app\admin\model\Donate as DonateModel;
+use app\admin\model\Article as ArticleModel;
 use think\Response;
 
-class Donate extends Admin
+class Article extends Admin
 {
     /**
-     * @var DonateModel
+     * @var ArticleModel
      */
     private $model;
     /**
@@ -26,15 +26,33 @@ class Donate extends Admin
      * @var string
      */
     private $filed;
+    /**
+     * @var string[]
+     */
+    private $associated;
+    /**
+     * @var bool
+     */
+    private $isEach;
+    /**
+     * @var string[]
+     */
+    private $count;
 
     public function __construct()
     {
         // 实例化模型对象
-        $this->model = new DonateModel;
+        $this->model = new ArticleModel;
         // 提示信息
-        $this->msg = '赞助人';
+        $this->msg = '文章';
         // 匹配字段
-        $this->filed = 'name';
+        $this->filed = 'title';
+        // 是否遍历
+        $this->isEach = false;
+        // 关联模型
+        $this->associated = ['category'];
+        // 关联统计
+        $this->count = ['comment'=>'count'];
     }
 
     /**
@@ -47,7 +65,7 @@ class Donate extends Admin
      */
     public function index(Request $request)
     {
-        return $this->adminIndex($this->model, $this->msg, $request, $this->filed);
+        return $this->adminIndex($this->model, $this->msg, $request, $this->filed, $this->isEach, $this->associated, $this->count);
     }
 
     /**

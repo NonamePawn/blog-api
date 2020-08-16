@@ -30,6 +30,14 @@ class Category extends Admin
      * @var string
      */
     private $filed;
+    /**
+     * @var string[]
+     */
+    private $associated;
+    /**
+     * @var string[]
+     */
+    private $count;
 
     public function __construct()
     {
@@ -41,6 +49,10 @@ class Category extends Admin
         $this->isEach = true;
         // 匹配字段
         $this->filed = 'name';
+        // 关联模型
+        $this->associated = [];
+        // 关联统计
+        $this->count = ['article'=>'count'];
     }
 
     /**
@@ -53,7 +65,7 @@ class Category extends Admin
      */
     public function index(Request  $request)
     {
-        return $this->adminIndex($this->model, $this->msg, $request, $this->filed, $this->isEach);
+        return $this->adminIndex($this->model, $this->msg, $request, $this->filed, $this->isEach, $this->associated, $this->count);
     }
 
 

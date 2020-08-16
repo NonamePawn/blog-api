@@ -23,12 +23,13 @@ class Admin extends Base
      * @param string $filed
      * @param bool $isEach
      * @param array $associated
+     * @param array $count
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function adminIndex(Model $model, string $msg, Request $request, string $filed='', bool $isEach=false, array $associated=[])
+    public function adminIndex(Model $model, string $msg, Request $request, string $filed='', bool $isEach=false, array $associated=[], array $count=[])
     {
         $params = null;
         foreach ($request->param() as $key => $value)
@@ -38,11 +39,11 @@ class Admin extends Base
         if ($isEach)
         {
             //遍历查询(适用于父子级关系列表)
-            return $this->each($params,  $model, $msg, $filed, $associated);
+            return $this->each($params,  $model, $msg, $filed, $associated, $count);
         }else
         {
             //列表查询
-            return $this->list($params, $model, $msg, $filed, $associated);
+            return $this->list($params, $model, $msg, $filed, $associated, $count);
         }
 
     }
@@ -54,17 +55,19 @@ class Admin extends Base
      * @param string $msg
      * @param string $filed
      * @param array $associated
+     * @param array $count
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function each($params, $model, $msg, $filed, $associated)
+    public function each($params, $model, $msg, $filed, $associated, $count)
     {
         // 分页查询
         if ($params)
         {
             $data['data'] = $model->with($associated)
+                                  ->withCount($count)
                                   ->page($params['pageNum'],$params['pageSize'])
                                   ->where('p_id', '0')
                                   ->whereLike($filed, '%'.$params['query'].'%')
@@ -77,10 +80,13 @@ class Admin extends Base
         // 查询所有
         else
         {
-            $data['data'] = $model->with($associated)->where('p_id', '0')->select();
+            $data['data'] = $model->with($associated)
+                                  ->withCount($count)
+                                  ->where('p_id', '0')
+                                  ->select();
             $data['total'] = $model->where('p_id', '0')->select()->count();
         }
-        $data['data'] = $this->children($model, $data['data'], 1, $associated);
+        $data['data'] = $this->children($model, $data['data'], 1, $associated, $count);
         return $this->create($data, 200, '获取'.$msg.'列表成功');
     }
 
@@ -91,17 +97,19 @@ class Admin extends Base
      * @param string $msg
      * @param string $filed
      * @param array $associated
+     * @param array $count
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function list($params, $model, $msg, $filed, $associated)
+    public function list($params, $model, $msg, $filed, $associated, $count)
     {
         // 分页查询
         if ($params)
         {
             $data['data'] = $model->with($associated)
+                                  ->withCount($count)
                                   ->page($params['pageNum'],$params['pageSize'])
                                   ->whereLike($filed, '%'.$params['query'].'%')
                                   ->select();
@@ -112,7 +120,9 @@ class Admin extends Base
         // 查询所有
         else
         {
-            $data['data'] = $model->with($associated)->select();
+            $data['data'] = $model->with($associated)
+                                  ->withCount($count)
+                                  ->select();
             $data['total'] = $model->select()->count();
         }
         return $this->create($data, 200, '获取'.$msg.'列表成功');
@@ -125,17 +135,21 @@ class Admin extends Base
      * @param $parent
      * @param $level
      * @param $associated
+     * @param $count
      * @return Response
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function children(Model $model, $parent, $level, $associated)
+    public function children(Model $model, $parent, $level, $associated, $count)
     {
         foreach ($parent as $key => $value)
         {
             // 查询是否有子级
-            $children = $model->with($associated)->where('p_id', $value['id'])->select();
+            $children = $model->with($associated)
+                              ->withCount($count)
+                              ->where('p_id', $value['id'])
+                              ->select();
             // 设置等级水平
             $parent[$key]['level'] = $level;
             // 没有子级
@@ -146,10 +160,21 @@ class Admin extends Base
             }else
             {
                 // 继续遍历子级
-                $this->children($model, $children, $level + 1, $associated);
+                $this->children($model, $children, $level + 1, $associated, $count);
             }
             // 绑定数据
             $parent[$key]['children'] = $children;
+            // 统计数据
+            if ($count)
+            {
+                $sum = 0;
+                foreach ($children as $item)
+                {
+                    $sum = $sum + $item['count'];
+                }
+                $parent[$key]['count'] = $sum;
+            }
+
         }
         // 返回数据
         return $parent;
